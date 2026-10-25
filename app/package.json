@@ -1,0 +1,13 @@
+{
+  "name": "cutmybills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CutMyBills web app: scans test households' emails, SMS and CIBIL reports, finds cheaper ways to pay the same bills.",
+  "type": "module",
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "node --no-warnings server.mjs",
+    "test": "node --no-warnings --test test/*.test.mjs",
+    "reset-db": "rm -f data/cutmybills.db data/cutmybills.db-wal data/cutmybills.db-shm"
+  }
+}
