@@ -1,0 +1,1372 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#171a26">
+  <title>CutMyBills</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --base: #171a26;
+  --surface: #212536;
+  --raised: #2c3146;
+  --line: #353b53;
+  --text: #f1efe9;
+  --muted: #9298ae;
+  --faint: #6a7089;
+  --gold: #e9b949;
+  --gold-soft: rgba(233, 185, 73, 0.14);
+  --coral: #ff8170;
+  --coral-soft: rgba(255, 129, 112, 0.14);
+
+  --display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+  --body: 'Figtree', system-ui, sans-serif;
+
+  --r-lg: 22px;
+  --r-md: 14px;
+  --r-sm: 10px;
+  --pad: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  background: #0f1119;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  display: grid;
+  place-items: center;
+}
+
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+/* Phone frame: real phone = full screen; desktop = framed device. */
+.device {
+  width: 100%;
+  height: 100dvh;
+  background: var(--base);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 520px) {
+  .device {
+    width: 400px;
+    height: min(860px, 96dvh);
+    border-radius: 44px;
+    border: 10px solid #05060a;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  }
+}
+
+.screen { flex: 1; overflow-y: auto; padding: 0 var(--pad) 28px; scrollbar-width: none; }
+.screen::-webkit-scrollbar { display: none; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0 8px;
+}
+.brand { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+.brand b { color: var(--gold); font-weight: 700; }
+
+.saved-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface); border-radius: 999px; padding: 7px 12px;
+  font-size: 13px; color: var(--muted);
+}
+.saved-chip strong { color: var(--gold); font-weight: 600; }
+
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; }
+h1 { font-size: 28px; line-height: 1.12; }
+h2 { font-size: 20px; line-height: 1.2; }
+h3 { font-size: 16px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+/* Home hero: the one bold thing. */
+.hero { padding: 22px 0 8px; }
+.hero-label { color: var(--muted); font-size: 15px; }
+.hero-amount {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 68px;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  margin: 10px 0 6px;
+  color: var(--gold);
+  display: flex;
+  align-items: flex-start;
+}
+.hero-amount .rupee { font-size: 34px; margin: 8px 4px 0 0; font-weight: 600; }
+.hero-amount.zero { color: var(--text); }
+.hero-sub { color: var(--muted); }
+.hero-sub strong { color: var(--text); font-weight: 600; }
+
+/* Slide to fix */
+.slider {
+  margin: 24px 0 8px;
+  position: relative;
+  height: 64px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+.slider-fill {
+  position: absolute; inset: 0 auto 0 0;
+  background: var(--gold-soft);
+  border-radius: 999px;
+  width: 64px;
+}
+.slider-label {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  color: var(--muted); font-weight: 500;
+  padding-left: 48px;
+}
+.slider-knob {
+  position: absolute; top: 4px; left: 4px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--gold); color: #1d1a10;
+  display: grid; place-items: center;
+  cursor: grab;
+  box-shadow: 0 6px 18px rgba(233, 185, 73, 0.35);
+}
+.slider-knob svg { width: 22px; height: 22px; }
+.slider.done .slider-label { color: var(--gold); padding-left: 0; }
+.slider-note { font-size: 12.5px; color: var(--faint); }
+
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin: 30px 0 10px;
+}
+.link { color: var(--gold); font-size: 14px; font-weight: 500; }
+
+/* Rows */
+.rows { display: flex; flex-direction: column; gap: 2px; background: var(--surface); border-radius: var(--r-lg); overflow: hidden; }
+.row {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 14px 14px 16px;
+  background: var(--surface);
+  text-align: left;
+  width: 100%;
+}
+.row + .row { border-top: 1px solid var(--line); }
+.row:active { background: var(--raised); }
+.mark {
+  width: 42px; height: 42px; border-radius: 13px;
+  display: grid; place-items: center;
+  background: var(--raised);
+  font-family: var(--display); font-weight: 700; font-size: 14px;
+  color: var(--text);
+}
+.row-main { min-width: 0; }
+.row-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-sub { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-end { text-align: right; }
+.row-save { color: var(--gold); font-weight: 600; font-size: 15px; }
+.row-amt { font-weight: 600; }
+.verb {
+  display: inline-block; margin-top: 4px;
+  font-size: 12.5px; font-weight: 600;
+  color: #1d1a10; background: var(--gold);
+  padding: 4px 10px; border-radius: 999px;
+}
+.verb.quiet { background: var(--raised); color: var(--muted); font-weight: 500; }
+.verb.done { background: transparent; color: var(--gold); padding: 4px 0; }
+
+.rail-tag {
+  display: inline-block;
+  font-size: 11.5px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 1px 8px; margin-left: 6px; vertical-align: 1px;
+}
+
+/* Tabs */
+.tabbar {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--line);
+  background: var(--base);
+  padding: 8px 6px calc(10px + env(safe-area-inset-bottom));
+}
+.tab { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; color: var(--faint); font-size: 11.5px; font-weight: 500; }
+.tab svg { width: 22px; height: 22px; }
+.tab.active { color: var(--text); }
+.tab.active svg { color: var(--gold); }
+
+/* Category filter */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 2px; scrollbar-width: none; margin: 0 calc(var(--pad) * -1); padding-left: var(--pad); padding-right: var(--pad); }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; padding: 8px 14px; border-radius: 999px; background: var(--surface); color: var(--muted); font-size: 13.5px; font-weight: 500; }
+.chip.on { background: var(--text); color: var(--base); }
+
+.cat-head { display: flex; justify-content: space-between; align-items: baseline; margin: 24px 2px 10px; }
+.cat-head .muted { font-size: 13px; }
+
+.summary {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;
+}
+.stat { background: var(--surface); border-radius: var(--r-md); padding: 14px 16px; }
+.stat .v { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; }
+.stat .k { color: var(--muted); font-size: 13px; }
+.stat.over .v { color: var(--coral); }
+.stat.save .v { color: var(--gold); }
+
+/* Bottom sheet */
+.scrim { position: absolute; inset: 0; background: rgba(5, 6, 12, 0.6); opacity: 0; transition: opacity 0.22s; z-index: 10; }
+.scrim.open { opacity: 1; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: 92%;
+  background: var(--surface);
+  border-radius: 26px 26px 0 0;
+  z-index: 11;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex; flex-direction: column;
+}
+.sheet.open { transform: translateY(0); }
+.sheet-grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 10px auto 4px; }
+.sheet-body { overflow-y: auto; padding: 10px var(--pad) 20px; }
+.sheet-foot { padding: 12px var(--pad) calc(18px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
+
+.sheet-top { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
+.sheet-top .mark { background: var(--raised); }
+.sheet-save { font-family: var(--display); font-weight: 800; font-size: 40px; letter-spacing: -0.03em; color: var(--gold); line-height: 1; }
+.sheet-save span { font-size: 16px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+
+.compare { margin: 18px 0; border-radius: var(--r-md); overflow: hidden; background: var(--raised); }
+.compare div { padding: 12px 14px; display: grid; grid-template-columns: 64px 1fr; gap: 10px; font-size: 14px; }
+.compare div + div { border-top: 1px solid var(--line); }
+.compare .k { color: var(--muted); }
+.compare .now { color: var(--text); }
+.compare .better { color: var(--gold); font-weight: 600; }
+
+.why { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 6px 0 18px; }
+.why li { padding-left: 18px; position: relative; color: var(--text); font-size: 14px; }
+.why li::before { content: ''; position: absolute; left: 2px; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+
+.evidence { background: var(--base); border-radius: var(--r-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.ev { display: flex; gap: 10px; font-size: 13px; color: var(--muted); align-items: flex-start; }
+.ev b { color: var(--text); font-weight: 600; min-width: 46px; }
+.fine { font-size: 12.5px; color: var(--faint); margin-top: 12px; }
+
+.steps { list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: 10px; margin: 8px 0 4px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 26px 1fr; gap: 10px; font-size: 14px; align-items: center; }
+.steps li::before { content: counter(s); width: 26px; height: 26px; border-radius: 50%; background: var(--raised); display: grid; place-items: center; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+
+.btn {
+  width: 100%; height: 54px; border-radius: 999px;
+  background: var(--gold); color: #1d1a10;
+  font-weight: 700; font-size: 16px;
+}
+.btn.ghost { background: var(--raised); color: var(--text); font-weight: 600; }
+.btn + .btn { margin-top: 10px; }
+
+.done-state { text-align: center; padding: 26px 0 10px; }
+.tick { width: 64px; height: 64px; border-radius: 50%; background: var(--gold); color: #1d1a10; display: grid; place-items: center; margin: 0 auto 16px; }
+.tick svg { width: 30px; height: 30px; }
+
+/* Toast */
+.toast {
+  position: absolute; left: 16px; right: 16px; bottom: 86px;
+  background: var(--text); color: var(--base);
+  border-radius: var(--r-md); padding: 13px 16px;
+  font-weight: 600; font-size: 14px;
+  display: flex; justify-content: space-between; gap: 10px;
+  transform: translateY(20px); opacity: 0; transition: all 0.25s; z-index: 20; pointer-events: none;
+}
+.toast.show { transform: none; opacity: 1; }
+.toast span { color: #8a6c1c; }
+
+/* Onboarding */
+.onb { flex: 1; display: flex; flex-direction: column; padding: 0 var(--pad) calc(22px + env(safe-area-inset-bottom)); overflow-y: auto; }
+.onb-hero { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px 0 20px; }
+.onb-hero h1 { font-size: 44px; line-height: 1.02; letter-spacing: -0.04em; font-weight: 800; }
+.onb-hero p { color: var(--muted); font-size: 17px; margin-top: 16px; max-width: 30ch; }
+.leak {
+  margin-top: 34px; font-family: var(--display); font-weight: 800; font-size: 20px;
+  color: var(--muted); letter-spacing: -0.02em; line-height: 1.5;
+}
+.leak span { color: var(--coral); }
+
+.source {
+  display: grid; grid-template-columns: 44px 1fr 48px; gap: 12px; align-items: center;
+  background: var(--surface); border-radius: var(--r-lg); padding: 16px; margin-bottom: 10px; text-align: left; width: 100%;
+}
+.source .mark { background: var(--raised); }
+.source p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.toggle { width: 46px; height: 28px; border-radius: 999px; background: var(--raised); position: relative; transition: background 0.2s; }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--muted); transition: transform 0.2s, background 0.2s; }
+.toggle.on { background: var(--gold); }
+.toggle.on::after { transform: translateX(18px); background: #1d1a10; }
+.promise { display: flex; flex-direction: column; gap: 6px; margin: 16px 2px 22px; font-size: 13px; color: var(--muted); }
+
+/* Scanning */
+.scan-counts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 22px 0 18px; }
+.scan-count { background: var(--surface); border-radius: var(--r-md); padding: 12px; }
+.scan-count .v { font-family: var(--display); font-weight: 700; font-size: 24px; }
+.scan-count .k { font-size: 12.5px; color: var(--muted); }
+.scan-count .f { font-size: 12.5px; color: var(--gold); margin-top: 2px; }
+.feed { display: flex; flex-direction: column; gap: 6px; }
+.feed-item {
+  display: flex; gap: 10px; align-items: center;
+  background: var(--surface); border-radius: var(--r-sm); padding: 10px 12px; font-size: 14px;
+  animation: drop 0.35s ease-out both;
+}
+.feed-item b { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; font-weight: 500; min-width: 50px; text-align: center; }
+@keyframes drop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+.scan-result { margin-top: 18px; }
+.scan-result .hero-amount { font-size: 54px; }
+
+/* Credit */
+.gauge { display: grid; place-items: center; margin: 18px 0 6px; position: relative; }
+.gauge svg { width: 240px; height: 140px; }
+.gauge-v { position: absolute; bottom: 8px; text-align: center; }
+.gauge-v .v { font-family: var(--display); font-weight: 800; font-size: 52px; letter-spacing: -0.04em; line-height: 1; }
+.gauge-v .k { color: var(--muted); font-size: 13px; }
+.factors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.bar { height: 6px; border-radius: 6px; background: var(--raised); margin-top: 8px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 6px; background: var(--muted); }
+.bar.hot i { background: var(--coral); }
+.tip { background: var(--coral-soft); border-radius: var(--r-md); padding: 14px 16px; margin-top: 12px; font-size: 14px; }
+.tip strong { color: var(--coral); }
+
+/* Calendar */
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 14px; text-align: center; }
+.cal .dow { font-size: 11.5px; color: var(--faint); padding-bottom: 4px; }
+.cal .d { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13.5px; color: var(--muted); position: relative; }
+.cal .d.has { background: var(--surface); color: var(--text); font-weight: 600; }
+.cal .d.sel { background: var(--text); color: var(--base); }
+.cal .d .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); margin-top: 3px; }
+.cal .d.sel .dot { background: var(--base); }
+.cal .d.today { outline: 1px solid var(--line); }
+.day-head { margin: 22px 2px 10px; display: flex; justify-content: space-between; }
+
+/* Saved */
+.streak { display: flex; gap: 6px; margin-top: 14px; }
+.streak i { flex: 1; height: 34px; border-radius: 8px; background: var(--surface); }
+.streak i.on { background: var(--gold); }
+
+.empty { text-align: center; padding: 40px 10px; color: var(--muted); }
+
+.sample-note { text-align: center; font-size: 12px; color: var(--faint); margin-top: 26px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+</style>
+</head>
+<body>
+  <div class="device" id="device"></div>
+  <script type="module">
+// Sample household used by the prototype. Every number here is illustrative,
+// not a live price: the real app fills this from the Gmail, SMS and CIBIL scans
+// and a maintained price database.
+
+const TODAY = '2026-10-25';
+
+const household = {
+  name: 'Kavya',
+  city: 'Pune',
+  members: 3,
+};
+
+// Standard reducing-balance EMI.
+function emi(principal, annualRate, months) {
+  const r = annualRate / 12 / 100;
+  return (principal * r * (1 + r) ** months) / ((1 + r) ** months - 1);
+}
+
+const loans = {
+  bajaj: { principal: 420000, rate: 16, newRate: 11.25, months: 34 },
+  sbi: { principal: 3800000, rate: 8.9, newRate: 8.15, months: 216 },
+};
+const bajajNow = Math.round(emi(loans.bajaj.principal, loans.bajaj.rate, loans.bajaj.months));
+const bajajNew = Math.round(emi(loans.bajaj.principal, loans.bajaj.newRate, loans.bajaj.months));
+const sbiNow = Math.round(emi(loans.sbi.principal, loans.sbi.rate, loans.sbi.months));
+const sbiNew = Math.round(emi(loans.sbi.principal, loans.sbi.newRate, loans.sbi.months));
+
+// Card interest per month on a revolving balance.
+const cardBalance = 86400;
+const cardNow = Math.round((cardBalance * 42) / 12 / 100);
+const cardNew = Math.round((cardBalance * 13.5) / 12 / 100);
+
+const categories = [
+  { id: 'phone', name: 'Phone and internet' },
+  { id: 'power', name: 'Power and gas' },
+  { id: 'apps', name: 'Streaming and apps' },
+  { id: 'health', name: 'Insurance and health' },
+  { id: 'credit', name: 'Cards and loans' },
+  { id: 'tax', name: 'Money you are owed' },
+];
+
+// kind: switch | stop | refinance | port | habit | claim
+const bills = [
+  {
+    id: 'cc-hdfc',
+    category: 'credit',
+    provider: 'HDFC Bank',
+    mark: 'HD',
+    title: 'Millennia credit card',
+    monthly: cardNow,
+    unit: 'interest a month',
+    rail: 'Card statement',
+    source: { rail: 'CIBIL', text: 'CIBIL report, account 4 of 4, pulled today' },
+    source2: { rail: 'SMS', text: 'HDFCBK statement SMS, 14 Oct: total due ₹86,400' },
+    nextDebit: '2026-11-04',
+    action: {
+      kind: 'refinance',
+      verb: 'Transfer',
+      save: cardNow - cardNew,
+      headline: 'Move this balance to 13.5% a year',
+      now: `₹86,400 rolling over at about 42% a year`,
+      better: 'Balance transfer loan at 13.5%, 12 months',
+      why: [
+        'You have carried a balance for 5 statements in a row.',
+        `At 42% that costs about ₹${cardNow.toLocaleString('en-IN')} a month in interest alone.`,
+        'Your score of 731 qualifies for partner balance-transfer offers.',
+      ],
+      partner: 'Offer from a lending partner via Paisabazaar. We earn a referral fee; it never changes the ranking.',
+      confidence: 'High',
+      steps: ['Check eligibility (no score impact)', 'Pick an offer', 'Lender pays HDFC directly'],
+      done: 'Transfer requested',
+    },
+  },
+  {
+    id: 'pl-bajaj',
+    category: 'credit',
+    provider: 'Bajaj Finance',
+    mark: 'BF',
+    title: 'Personal loan, 34 EMIs left',
+    monthly: bajajNow,
+    unit: 'EMI',
+    rail: 'EMI',
+    source: { rail: 'CIBIL', text: 'CIBIL report, account 2 of 4: ₹4.2 lakh outstanding at 16%' },
+    nextDebit: '2026-11-05',
+    action: {
+      kind: 'refinance',
+      verb: 'Refinance',
+      save: bajajNow - bajajNew,
+      headline: 'Refinance from 16% to 11.25%',
+      now: `₹${bajajNow.toLocaleString('en-IN')} EMI at 16%`,
+      better: `₹${bajajNew.toLocaleString('en-IN')} EMI at 11.25%, same 34 months`,
+      why: [
+        'Rates have dropped since you borrowed in 2024.',
+        'Closing early costs a one-time 4% fee, about ₹16,800. The lower EMI earns it back in about 18 months.',
+      ],
+      partner: 'Offer from a lending partner. We earn a referral fee; it never changes the ranking.',
+      confidence: 'Medium',
+      steps: ['Check eligibility (no score impact)', 'Upload last 3 salary slips', 'New lender closes the old loan'],
+      done: 'Refinance requested',
+    },
+  },
+  {
+    id: 'hl-sbi',
+    category: 'credit',
+    provider: 'SBI',
+    mark: 'SB',
+    title: 'Home loan, 18 years left',
+    monthly: sbiNow,
+    unit: 'EMI',
+    rail: 'EMI',
+    source: { rail: 'CIBIL', text: 'CIBIL report, account 1 of 4: ₹38 lakh outstanding at 8.9%' },
+    nextDebit: '2026-11-07',
+    action: {
+      kind: 'refinance',
+      verb: 'Reset rate',
+      save: sbiNow - sbiNew,
+      headline: 'Ask SBI to move you to 8.15%',
+      now: `₹${sbiNow.toLocaleString('en-IN')} EMI at 8.9%`,
+      better: `₹${sbiNew.toLocaleString('en-IN')} EMI at 8.15%, same tenure`,
+      why: [
+        'New SBI home loans for your profile are priced near 8.15%.',
+        'Existing borrowers can switch to the current rate for a one-time fee of about ₹10,000.',
+        'The lower EMI earns the fee back in about 6 months.',
+      ],
+      partner: 'No partner. You request this from SBI; we draft the letter.',
+      confidence: 'High',
+      steps: ['We draft the conversion request', 'You submit it in YONO or at the branch', 'New EMI from next cycle'],
+      done: 'Letter ready',
+    },
+  },
+  {
+    id: 'gym',
+    category: 'health',
+    provider: 'cult.fit',
+    mark: 'CF',
+    title: 'Elite membership',
+    monthly: 1499,
+    unit: 'a month',
+    rail: 'UPI AutoPay',
+    source: { rail: 'Gmail', text: 'Last cult.fit check-in email: 3 Sep, 52 days ago' },
+    source2: { rail: 'SMS', text: 'UPI AutoPay mandate via PhonePe, debits on the 2nd' },
+    nextDebit: '2026-11-02',
+    action: {
+      kind: 'stop',
+      verb: 'Pause',
+      save: 1499,
+      headline: 'Pause until you go back',
+      now: '₹1,499 a month, no check-ins for 52 days',
+      better: 'Pause the AutoPay. Restart in one tap when you return.',
+      why: ['No check-in emails since 3 Sep.', 'Your next debit is in 8 days.'],
+      partner: 'No partner. The mandate lives in PhonePe; we take you straight to it.',
+      confidence: 'High',
+      steps: ['Open PhonePe AutoPay', 'Pause the cult.fit mandate'],
+      done: 'Paused',
+    },
+  },
+  {
+    id: 'star',
+    category: 'health',
+    provider: 'Star Health',
+    mark: 'SH',
+    title: 'Family floater, ₹10 lakh cover',
+    monthly: Math.round(28400 / 12),
+    unit: 'a month, paid yearly',
+    rail: 'Renewal',
+    source: { rail: 'Gmail', text: 'Star Health renewal notice, 11 Oct: ₹28,400 due 18 Nov' },
+    nextDebit: '2026-11-18',
+    debit: 28400,
+    action: {
+      kind: 'port',
+      verb: 'Port',
+      save: Math.round(4500 / 12),
+      headline: 'Same cover for ₹4,500 less a year',
+      now: '₹28,400 a year, premium up 14% on renewal',
+      better: 'Comparable ₹10 lakh floater from ₹23,900, waiting periods carried over',
+      why: [
+        'Porting keeps the waiting period you have already served.',
+        'Renewal is in 24 days; porting must start at least 15 days before.',
+      ],
+      partner: 'Quotes via Policybazaar, an IRDAI-registered broker. We earn a referral fee.',
+      confidence: 'Medium',
+      steps: ['Compare 3 matched quotes', 'Pick one', 'Insurer handles the port'],
+      done: 'Port started',
+    },
+  },
+  {
+    id: 'streaming',
+    category: 'apps',
+    provider: 'Netflix, Prime, JioHotstar, SonyLIV',
+    mark: 'TV',
+    title: '4 streaming apps',
+    monthly: 1416,
+    unit: 'a month',
+    rail: 'UPI AutoPay',
+    source: { rail: 'SMS', text: '4 recurring debits found: Netflix ₹649, JioHotstar ₹299, Prime ₹125, SonyLIV ₹343' },
+    nextDebit: '2026-11-09',
+    action: {
+      kind: 'switch',
+      verb: 'Rotate',
+      save: 540,
+      headline: 'Watch the same shows on two apps at a time',
+      now: '4 apps running all year',
+      better: 'A monthly rotation planned around what you actually watch',
+      why: [
+        'Your household watched mostly Netflix and JioHotstar in the last 90 days.',
+        'pickamovie.tv plans which two to keep each month.',
+      ],
+      partner: 'Powered by pickamovie.tv.',
+      confidence: 'High',
+      steps: ['Open your plan on pickamovie.tv', 'Cancel the two apps it pauses this month'],
+      done: 'Rotation on',
+    },
+  },
+  {
+    id: 'cloud',
+    category: 'apps',
+    provider: 'iCloud+ and Google One',
+    mark: 'CL',
+    title: 'Two cloud storage plans',
+    monthly: 869,
+    unit: 'a month',
+    rail: 'App store',
+    source: { rail: 'Gmail', text: 'Apple receipt ₹219 and Google One receipt ₹650, both in October' },
+    nextDebit: '2026-11-12',
+    action: {
+      kind: 'stop',
+      verb: 'Stop one',
+      save: 219,
+      headline: 'You pay for cloud storage twice',
+      now: 'iCloud+ 200 GB and Google One 2 TB',
+      better: 'Keep Google One 2 TB, move photos off iCloud',
+      why: ['Google One already has 1.4 TB free.', 'Both plans renew in the same week.'],
+      partner: 'No partner.',
+      confidence: 'High',
+      steps: ['Back up iPhone photos to Google Photos', 'Stop iCloud+ in Settings, Apple ID, Subscriptions'],
+      done: 'Stopped',
+    },
+  },
+  {
+    id: 'spotify',
+    category: 'apps',
+    provider: 'Spotify',
+    mark: 'SP',
+    title: 'Premium Family',
+    monthly: 179,
+    unit: 'a month',
+    rail: 'Card e-mandate',
+    source: { rail: 'SMS', text: 'Card e-mandate debit, 6 Oct' },
+    nextDebit: '2026-11-06',
+    action: null,
+  },
+  {
+    id: 'act',
+    category: 'phone',
+    provider: 'ACT Fibernet',
+    mark: 'AC',
+    title: '300 Mbps, monthly',
+    monthly: 1199,
+    unit: 'a month',
+    rail: 'Bill',
+    source: { rail: 'Gmail', text: 'ACT invoice, 3 Oct: peak use 62 Mbps this month' },
+    nextDebit: '2026-11-03',
+    action: {
+      kind: 'switch',
+      verb: 'Switch plan',
+      save: 350,
+      headline: 'You never use more than 70 Mbps',
+      now: '300 Mbps for ₹1,199 a month',
+      better: '150 Mbps for ₹849 a month on a 6-month prepay',
+      why: [
+        'Peak use stayed under 70 Mbps for the last 3 invoices.',
+        '150 Mbps still covers 4K streaming on 3 screens at once.',
+      ],
+      partner: 'No partner. We request the downgrade from ACT for you.',
+      confidence: 'High',
+      steps: ['We raise the plan change with ACT', 'New price from your next bill'],
+      done: 'Switch requested',
+    },
+  },
+  {
+    id: 'jio',
+    category: 'phone',
+    provider: 'Jio',
+    mark: 'JI',
+    title: 'Kavya, 2 GB a day, 84 days',
+    monthly: 368,
+    unit: 'a month, paid every 84 days',
+    rail: 'UPI AutoPay',
+    source: { rail: 'SMS', text: 'Jio data alerts: average use 1.1 GB a day over 84 days' },
+    nextDebit: '2026-11-21',
+    debit: 1029,
+    action: {
+      kind: 'switch',
+      verb: 'Switch plan',
+      save: 83,
+      headline: 'Drop to 1.5 GB a day',
+      now: '₹1,029 for 2 GB a day',
+      better: '₹799 for 1.5 GB a day, same 84 days',
+      why: ['You used 1.1 GB a day on average.', 'Home Wi-Fi covers most of your data.'],
+      partner: 'No partner. Recharge in MyJio when this pack ends.',
+      confidence: 'High',
+      steps: ['Set the ₹799 plan as your next recharge'],
+      done: 'Next recharge set',
+    },
+  },
+  {
+    id: 'vi',
+    category: 'phone',
+    provider: 'Vi',
+    mark: 'VI',
+    title: 'Rohan, prepaid 28 days',
+    monthly: 374,
+    debit: 349,
+    unit: 'a month, paid every 28 days',
+    rail: 'UPI AutoPay',
+    source: { rail: 'SMS', text: 'Vi recharge confirmation, 12 Oct: ₹349 for 28 days' },
+    nextDebit: '2026-11-09',
+    action: {
+      kind: 'switch',
+      verb: 'Combine',
+      save: 125,
+      headline: 'Add Rohan to a family plan',
+      now: 'Two separate SIMs on two networks',
+      better: 'Jio family add-on for ₹249 a month, number kept',
+      why: ['28-day packs mean 13 recharges a year, not 12.', 'Your number moves with MNP in about 3 days.'],
+      partner: 'No partner.',
+      confidence: 'Medium',
+      steps: ['Send MNP SMS to 1900', 'Jio collects the SIM to your door'],
+      done: 'Port started',
+    },
+  },
+  {
+    id: 'msedcl',
+    category: 'power',
+    provider: 'MSEDCL',
+    mark: 'MS',
+    title: 'Electricity, 412 units',
+    monthly: 3240,
+    unit: 'last bill',
+    rail: 'Bill',
+    source: { rail: 'Gmail', text: 'MSEDCL e-bill, 12 Oct: 412 units, 112 above the 300-unit slab' },
+    nextDebit: '2026-11-14',
+    action: {
+      kind: 'habit',
+      verb: 'See how',
+      save: 420,
+      headline: 'Stay under 300 units',
+      now: 'Units above 300 cost about 38% more',
+      better: 'Three changes that cut about 110 units',
+      why: [
+        'Geyser on a 20-minute timer instead of always on: about 45 units.',
+        'AC at 24°C instead of 20°C: about 50 units.',
+        'Fridge is 11 years old: a 5-star model saves about 15 units a month.',
+      ],
+      partner: 'No partner. Estimates from your bill history.',
+      confidence: 'Medium',
+      steps: ['Pick the changes you will make', 'We track next month\'s units'],
+      done: 'Plan saved',
+    },
+  },
+  {
+    id: 'mngl',
+    category: 'power',
+    provider: 'MNGL',
+    mark: 'MN',
+    title: 'Piped gas',
+    monthly: 640,
+    unit: 'last bill',
+    rail: 'Bill',
+    source: { rail: 'Gmail', text: 'MNGL bill, 8 Oct' },
+    nextDebit: '2026-11-20',
+    action: null,
+  },
+  {
+    id: 'tax80d',
+    category: 'tax',
+    provider: 'Income Tax',
+    mark: 'IT',
+    title: 'Section 80D not claimed',
+    monthly: 0,
+    unit: 'one-time',
+    rail: 'Refund',
+    source: { rail: 'Gmail', text: 'Your ITR acknowledgement for AY 2026-27 shows no 80D deduction' },
+    nextDebit: null,
+    oneOff: 5200,
+    action: {
+      kind: 'claim',
+      verb: 'Claim',
+      save: 0,
+      oneOff: 5200,
+      headline: 'Get about ₹5,200 back',
+      now: 'You paid ₹28,400 health premium but did not claim it',
+      better: 'Revise your return before 31 Dec to claim up to ₹25,000',
+      why: ['At your 20% slab, ₹25,000 of deduction is ₹5,200 with cess.'],
+      partner: 'No partner. We prepare the revision checklist.',
+      confidence: 'High',
+      steps: ['Download your premium certificate', 'File a revised return on the income tax portal'],
+      done: 'Checklist ready',
+    },
+  },
+];
+
+const credit = {
+  score: 731,
+  pulled: 'today',
+  utilisation: 64,
+  onTime: 100,
+  accounts: 4,
+  enquiries: 1,
+  age: '6 yrs 2 mos',
+  limits: { hdfc: 135000 },
+};
+
+// Spread of the three scans, used by the scanning animation.
+const scanFeed = [
+  { rail: 'SMS', text: 'Jio recharge, ₹1,029' },
+  { rail: 'Gmail', text: 'ACT Fibernet invoice, ₹1,199' },
+  { rail: 'SMS', text: 'cult.fit AutoPay, ₹1,499' },
+  { rail: 'Gmail', text: 'MSEDCL e-bill, ₹3,240' },
+  { rail: 'CIBIL', text: 'SBI home loan, ₹38 lakh' },
+  { rail: 'SMS', text: 'Netflix, ₹649' },
+  { rail: 'Gmail', text: 'Star Health renewal, ₹28,400' },
+  { rail: 'SMS', text: 'HDFC card statement, ₹86,400 due' },
+  { rail: 'CIBIL', text: 'Bajaj personal loan, ₹4.2 lakh' },
+  { rail: 'Gmail', text: 'Apple iCloud+ receipt, ₹219' },
+  { rail: 'SMS', text: 'Vi recharge, ₹349' },
+  { rail: 'Gmail', text: 'Google One receipt, ₹650' },
+  { rail: 'SMS', text: 'JioHotstar AutoPay, ₹299' },
+  { rail: 'Gmail', text: 'MNGL gas bill, ₹640' },
+  { rail: 'CIBIL', text: 'HDFC Millennia card, 64% used' },
+  { rail: 'Gmail', text: 'ITR acknowledgement, AY 2026-27' },
+  { rail: 'SMS', text: 'Spotify e-mandate, ₹179' },
+  { rail: 'SMS', text: 'SonyLIV, ₹343' },
+];
+
+const scanTotals = { Gmail: { read: 214, found: 7 }, SMS: { read: 1284, found: 9 }, CIBIL: { read: 4, found: 4 } };
+
+
+// ---------- helpers ----------
+const inr = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+const num = (n) => Math.round(n).toLocaleString('en-IN');
+const byId = (id) => bills.find((b) => b.id === id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const parse = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+const iso = (dt) => dt.toISOString().slice(0, 10);
+const fmtDay = (s) => { const d = parse(s); return `${DOW[d.getUTCDay()]}, ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`; };
+const daysFrom = (s) => Math.round((parse(s) - parse(TODAY)) / 864e5);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const icon = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg>',
+  bills: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>',
+  credit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+  back: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+};
+
+// ---------- state ----------
+const state = {
+  stage: 'welcome', // welcome | connect | scan | app
+  sources: { Gmail: true, SMS: true, CIBIL: true },
+  tab: 'home', // home | bills | credit | cal | saved
+  filter: 'all',
+  fixed: {},
+  sheet: null, // { id, step: 'detail' | 'done' }
+  calSel: null,
+};
+
+const visible = () => bills.filter((b) => state.sources[b.source.rail] || (b.source2 && state.sources[b.source2.rail]));
+const openFixes = () => visible().filter((b) => b.action && !state.fixed[b.id]);
+const saveable = () => openFixes().reduce((s, b) => s + b.action.save, 0);
+const owed = () => openFixes().reduce((s, b) => s + (b.action.oneOff || 0), 0);
+const savedMonthly = () => visible().filter((b) => state.fixed[b.id]).reduce((s, b) => s + b.action.save, 0);
+const savedOneOff = () => visible().filter((b) => state.fixed[b.id]).reduce((s, b) => s + (b.action.oneOff || 0), 0);
+const outgoing = () => visible().reduce((s, b) => s + b.monthly, 0);
+const due = (b) => b.debit ?? b.monthly; // what actually leaves the account on nextDebit
+
+// ---------- views ----------
+function viewWelcome() {
+  return `
+  <div class="onb">
+    <div class="topbar"><span class="brand">cut<b>my</b>bills</span></div>
+    <div class="onb-hero">
+      <h1>Same life.<br>Lower bills.</h1>
+      <p>We read your bills, find the cheaper way to get the same thing, and do the switching for you.</p>
+      <div class="leak">
+        <div>Paying for 300 Mbps, <span>using 62.</span></div>
+        <div>Two cloud plans, <span>one phone.</span></div>
+        <div>A card at 42% <span>when 13.5% is on offer.</span></div>
+      </div>
+    </div>
+    <button class="btn" data-act="go-connect">Find my savings</button>
+    <p class="small muted" style="text-align:center;margin-top:12px">Takes about a minute. We never ask for a bank password.</p>
+  </div>`;
+}
+
+function viewConnect() {
+  const src = [
+    ['Gmail', 'GM', 'Bills and receipts in your inbox. Read-only, bills only.'],
+    ['SMS', 'SM', 'Debit and AutoPay alerts. Read on your phone, never uploaded.'],
+    ['CIBIL', 'CB', 'Your loans and cards. Checking does not affect your score.'],
+  ];
+  const any = Object.values(state.sources).some(Boolean);
+  return `
+  <div class="onb">
+    <div class="topbar"><button data-act="go-welcome" aria-label="Back">${icon.back}</button><span></span></div>
+    <div style="padding:14px 0 22px">
+      <h1>Where should we look?</h1>
+      <p class="muted" style="margin-top:8px">Each source finds bills the others miss. Use all three for the full picture.</p>
+    </div>
+    ${src
+      .map(
+        ([k, m, d]) => `
+      <button class="source" data-act="toggle-src" data-src="${k}" role="switch" aria-checked="${state.sources[k]}">
+        <span class="mark">${m}</span>
+        <span><h3>${k === 'SMS' ? 'SMS' : k}</h3><p>${d}</p></span>
+        <span class="toggle ${state.sources[k] ? 'on' : ''}"></span>
+      </button>`
+      )
+      .join('')}
+    <div class="promise">
+      <span>We store what each bill is, never the message itself.</span>
+      <span>Disconnect any source and its data is deleted.</span>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn" data-act="go-scan" ${any ? '' : 'disabled style="opacity:.4"'}>Start scan</button>
+  </div>`;
+}
+
+function viewScan() {
+  const rails = Object.keys(state.sources).filter((k) => state.sources[k]);
+  return `
+  <div class="onb">
+    <div class="topbar"><span class="brand">cut<b>my</b>bills</span></div>
+    <div style="padding-top:14px"><h1 id="scan-title">Reading your bills</h1></div>
+    <div class="scan-counts">
+      ${rails
+        .map(
+          (r) => `<div class="scan-count"><div class="v num" id="c-${r}">0</div><div class="k">${r === 'CIBIL' ? 'accounts' : r === 'SMS' ? 'messages' : 'emails'}</div><div class="f num" id="f-${r}">0 bills</div></div>`
+        )
+        .join('')}
+    </div>
+    <div class="feed" id="feed"></div>
+    <div id="scan-result"></div>
+  </div>`;
+}
+
+function topbar() {
+  const s = savedMonthly();
+  return `<div class="topbar">
+    <span class="brand">cut<b>my</b>bills</span>
+    <button class="saved-chip" data-act="tab" data-tab="saved">Saved <strong class="num" id="saved-chip">${inr(s)}</strong>/mo</button>
+  </div>`;
+}
+
+function row(b, opts = {}) {
+  const a = b.action;
+  const done = state.fixed[b.id];
+  let end;
+  if (!a) end = `<div class="row-amt num">${inr(b.monthly)}</div><span class="verb quiet">Best price</span>`;
+  else if (done && opts.due) end = `<div class="row-amt num">${inr(due(b))}</div><span class="verb done">✓ ${esc(a.done)}</span>`;
+  else if (done) end = `<div class="row-save num">${a.oneOff ? '+' + inr(a.oneOff) : `−${inr(a.save)}<span class="small muted">/mo</span>`}</div><span class="verb done">✓ ${esc(a.done)}</span>`;
+  else if (opts.due) end = `<div class="row-amt num">${inr(due(b))}</div><span class="verb">${esc(a.verb)}</span>`;
+  else if (a.oneOff) end = `<div class="row-save num">+${inr(a.oneOff)}</div><span class="verb">${esc(a.verb)}</span>`;
+  else end = `<div class="row-save num">−${inr(a.save)}<span class="small muted">/mo</span></div><span class="verb">${esc(a.verb)}</span>`;
+  const sub = opts.home && a && !done ? esc(a.headline) : `${b.monthly ? inr(b.monthly) + ' ' + esc(b.unit) : esc(b.unit)}`;
+  return `<button class="row" data-act="open" data-id="${b.id}">
+    <span class="mark">${b.mark}</span>
+    <span class="row-main"><div class="row-title">${esc(b.provider)}</div><div class="row-sub">${sub}</div></span>
+    <span class="row-end">${end}</span>
+  </button>`;
+}
+
+function viewHome() {
+  const amt = saveable();
+  const fixes = openFixes().sort((x, y) => (y.action.save || y.action.oneOff / 12) - (x.action.save || x.action.oneOff / 12));
+  const upcoming = visible()
+    .filter((b) => b.nextDebit && daysFrom(b.nextDebit) >= 0 && daysFrom(b.nextDebit) <= 7)
+    .sort((x, y) => x.nextDebit.localeCompare(y.nextDebit));
+  const o = owed();
+  const inProgress = visible().filter((b) => state.fixed[b.id]);
+  const sub = amt
+    ? `That is <strong class="num">${inr(amt * 12)}</strong> a year${o ? `, plus <strong class="num">${inr(o)}</strong> owed to you.` : '.'}`
+    : inProgress.length
+      ? `${inProgress.length} fixes are in progress. We will tell you as each one lands, and whenever a price changes.`
+      : 'We will tell you the moment a cheaper option appears.';
+  return `
+  ${topbar()}
+  <section class="hero">
+    <div class="hero-label">${amt ? 'You can save every month' : 'Nothing left to fix'}</div>
+    <div class="hero-amount num ${amt ? '' : 'zero'}" id="hero-amt"><span class="rupee">₹</span><span id="hero-num">${num(amt)}</span></div>
+    <div class="hero-sub">${sub}</div>
+    ${
+      fixes.length
+        ? `<div class="slider" id="slider" role="slider" aria-label="Slide to fix all ${fixes.length}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+            <div class="slider-fill" id="slider-fill"></div>
+            <div class="slider-label" id="slider-label">Slide to fix all ${fixes.length}</div>
+            <div class="slider-knob" id="slider-knob">${icon.arrow}</div>
+          </div>
+          <div class="slider-note">Starts every fix at once. Anything that needs your OK waits for you.</div>`
+        : ''
+    }
+  </section>
+  ${
+    fixes.length
+      ? `<div class="section-head"><h2>Biggest fixes</h2><button class="link" data-act="tab" data-tab="bills">All ${visible().length} bills</button></div>
+         <div class="rows">${fixes.slice(0, 5).map((b) => row(b, { home: true })).join('')}</div>`
+      : ''
+  }
+  ${
+    !fixes.length && inProgress.length
+      ? `<div class="section-head"><h2>In progress</h2><button class="link" data-act="tab" data-tab="saved">All ${inProgress.length}</button></div>
+         <div class="rows">${inProgress.slice(0, 5).map((b) => row(b)).join('')}</div>`
+      : ''
+  }
+  ${
+    upcoming.length
+      ? `<div class="section-head"><h2>Going out this week</h2><button class="link" data-act="tab" data-tab="cal">Calendar</button></div>
+         <div class="rows">${upcoming
+           .map(
+             (b) => `<button class="row" data-act="open" data-id="${b.id}"><span class="mark">${b.mark}</span><span class="row-main"><div class="row-title">${esc(b.provider)}</div><div class="row-sub">${fmtDay(b.nextDebit)}, ${esc(b.rail)}</div></span><span class="row-end"><div class="row-amt num">${inr(due(b))}</div></span></button>`
+           )
+           .join('')}</div>`
+      : ''
+  }
+  <p class="sample-note">Prototype with a sample household. Prices are illustrative.</p>`;
+}
+
+function viewBills() {
+  const list = visible();
+  const cats = categories.filter((c) => list.some((b) => b.category === c.id));
+  const shown = state.filter === 'all' ? cats : cats.filter((c) => c.id === state.filter);
+  return `
+  ${topbar()}
+  <h1 style="margin-top:10px">Your bills</h1>
+  <div class="summary">
+    <div class="stat"><div class="v num">${inr(outgoing())}</div><div class="k">going out a month</div></div>
+    <div class="stat save"><div class="v num">${inr(saveable())}</div><div class="k">you can cut a month</div></div>
+  </div>
+  <div class="chips" style="margin-top:18px">
+    <button class="chip ${state.filter === 'all' ? 'on' : ''}" data-act="filter" data-f="all">All</button>
+    ${cats.map((c) => `<button class="chip ${state.filter === c.id ? 'on' : ''}" data-act="filter" data-f="${c.id}">${c.name}</button>`).join('')}
+  </div>
+  ${shown
+    .map((c) => {
+      const items = list.filter((b) => b.category === c.id);
+      const cut = items.filter((b) => b.action && !state.fixed[b.id]).reduce((s, b) => s + b.action.save, 0);
+      return `<div class="cat-head"><h3>${c.name}</h3><span class="muted num">${cut ? `${inr(cut)}/mo to cut` : ''}</span></div>
+      <div class="rows">${items.map((b) => row(b)).join('')}</div>`;
+    })
+    .join('')}`;
+}
+
+function gauge(score) {
+  const t = (score - 300) / 600;
+  const a = Math.PI * (1 - t);
+  const x = 120 + 100 * Math.cos(a);
+  const y = 125 - 100 * Math.sin(a);
+  return `<svg viewBox="0 0 240 140" aria-hidden="true">
+    <path d="M20 125 A100 100 0 0 1 220 125" fill="none" stroke="var(--raised)" stroke-width="14" stroke-linecap="round"/>
+    <path d="M20 125 A100 100 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="var(--gold)" stroke-width="14" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function viewCredit() {
+  if (!state.sources.CIBIL)
+    return `${topbar()}<h1 style="margin-top:10px">Credit</h1><div class="empty"><p>Connect your CIBIL report to see your loans, cards and the cheapest way to carry them.</p><button class="btn" style="margin-top:18px" data-act="connect-cibil">Connect CIBIL</button></div>`;
+  const items = visible().filter((b) => b.category === 'credit');
+  const cut = items.filter((b) => !state.fixed[b.id]).reduce((s, b) => s + (b.action ? b.action.save : 0), 0);
+  const cardDone = state.fixed['cc-hdfc'];
+  const util = credit.utilisation; // stays until the transfer actually clears
+  return `
+  ${topbar()}
+  <h1 style="margin-top:10px">Credit</h1>
+  <div class="gauge">${gauge(credit.score)}<div class="gauge-v"><div class="v num">${credit.score}</div><div class="k">CIBIL score, pulled ${credit.pulled}</div></div></div>
+  <div class="factors">
+    <div class="stat"><div class="k">Card limit used</div><div class="v num" style="color:${util > 30 ? 'var(--coral)' : 'var(--text)'}">${util}%</div><div class="bar ${util > 30 ? 'hot' : ''}"><i style="width:${util}%"></i></div></div>
+    <div class="stat"><div class="k">Paid on time</div><div class="v num">${credit.onTime}%</div><div class="bar"><i style="width:${credit.onTime}%"></i></div></div>
+    <div class="stat"><div class="k">Open accounts</div><div class="v num">${credit.accounts}</div></div>
+    <div class="stat"><div class="k">Credit age</div><div class="v">${credit.age}</div></div>
+  </div>
+  ${
+    cardDone
+      ? `<div class="tip" style="background:var(--gold-soft)"><strong style="color:var(--gold)">Card balance moving.</strong> Once the transfer clears, your card use drops to zero, the biggest lever on your score.</div>`
+      : `<div class="tip"><strong>64% of your card limit is in use.</strong> Lenders read anything over 30% as stretched. Moving the HDFC balance fixes this and the 42% interest together.</div>`
+  }
+  <div class="section-head"><h2>Loans and cards</h2><span class="muted num small">${cut ? inr(cut) + '/mo to cut' : ''}</span></div>
+  <div class="rows">${items.map((b) => row(b)).join('')}</div>`;
+}
+
+function viewCal() {
+  const list = visible().filter((b) => b.nextDebit);
+  const start = parse(TODAY);
+  start.setUTCDate(start.getUTCDate() - start.getUTCDay());
+  const days = Array.from({ length: 35 }, (_, i) => { const d = new Date(start); d.setUTCDate(d.getUTCDate() + i); return iso(d); });
+  const byDay = {};
+  list.forEach((b) => (byDay[b.nextDebit] = [...(byDay[b.nextDebit] || []), b]));
+  const firstDebit = Object.keys(byDay).sort()[0];
+  const sel = state.calSel || firstDebit;
+  const in30 = list.filter((b) => daysFrom(b.nextDebit) >= 0 && daysFrom(b.nextDebit) <= 30).reduce((s, b) => s + due(b), 0);
+  const selItems = byDay[sel] || [];
+  return `
+  ${topbar()}
+  <h1 style="margin-top:10px">Calendar</h1>
+  <div class="summary"><div class="stat"><div class="v num">${inr(in30)}</div><div class="k">going out in 30 days</div></div><div class="stat"><div class="v num">${Object.keys(byDay).length}</div><div class="k">debit days</div></div></div>
+  <div class="cal">
+    ${DOW.map((d) => `<div class="dow">${d[0]}</div>`).join('')}
+    ${days
+      .map((d) => {
+        const has = byDay[d];
+        const past = daysFrom(d) < 0;
+        const dd = parse(d).getUTCDate();
+        return `<button class="d ${has ? 'has' : ''} ${d === sel ? 'sel' : ''} ${d === TODAY ? 'today' : ''}" ${has ? `data-act="cal" data-d="${d}"` : 'tabindex="-1"'} style="${past ? 'opacity:.35' : ''}" aria-label="${fmtDay(d)}${has ? ', ' + has.length + ' debits' : ''}">${dd === 1 ? MONTHS[parse(d).getUTCMonth()] : dd}${has ? '<i class="dot"></i>' : ''}</button>`;
+      })
+      .join('')}
+  </div>
+  <div class="day-head"><h3>${sel ? fmtDay(sel) : ''}</h3><span class="muted num">${inr(selItems.reduce((s, b) => s + due(b), 0))}</span></div>
+  <div class="rows">${selItems.map((b) => row(b, { due: true })).join('')}</div>`;
+}
+
+function viewSaved() {
+  const m = savedMonthly();
+  const one = savedOneOff();
+  const done = visible().filter((b) => state.fixed[b.id]);
+  return `
+  <div class="topbar"><button data-act="tab" data-tab="home" aria-label="Back">${icon.back}</button><span class="brand">cut<b>my</b>bills</span></div>
+  <section class="hero">
+    <div class="hero-label">Your fixes save every year</div>
+    <div class="hero-amount num ${m ? '' : 'zero'}"><span class="rupee">₹</span>${num(m * 12)}</div>
+    <div class="hero-sub">${m ? `<strong class="num">${inr(m)}</strong> a month from ${done.length} fixes${one ? `, plus <strong class="num">${inr(one)}</strong> back once` : ''}. Counted as saved once each one lands.` : 'Your first fix is one swipe away on Home.'}</div>
+  </section>
+  <div class="section-head"><h2>Saving streak</h2><span class="muted small">${m ? 'Starts this month' : 'Not started'}</span></div>
+  <div class="streak">${Array.from({ length: 12 }, (_, i) => `<i class="${m && i === 0 ? 'on' : ''}"></i>`).join('')}</div>
+  <p class="small muted" style="margin-top:8px">A month counts when every bill is on its best price.</p>
+  ${
+    done.length
+      ? `<div class="section-head"><h2>What you fixed</h2></div><div class="rows">${done.map((b) => row(b)).join('')}</div>`
+      : `<div class="empty"><button class="btn" data-act="tab" data-tab="home">Find my first fix</button></div>`
+  }`;
+}
+
+function sheetHtml() {
+  const b = byId(state.sheet.id);
+  const a = b.action;
+  const done = state.sheet.step === 'done' || state.fixed[b.id];
+  const sources = [b.source, b.source2].filter(Boolean);
+  const evidence = `<div class="evidence">${sources.map((s) => `<div class="ev"><b>${s.rail}</b><span>${esc(s.text)}</span></div>`).join('')}</div>`;
+  let body, foot;
+  if (!a) {
+    body = `<div class="sheet-top"><span class="mark">${b.mark}</span><div><h2>${esc(b.provider)}</h2><div class="muted small">${esc(b.title)}</div></div></div>
+      <div class="sheet-save num">${inr(b.monthly)}<span>${esc(b.unit)}</span></div>
+      <p style="margin:16px 0">This is already the best price we know for how you use it. We check again every month.</p>
+      <h3 style="margin-bottom:8px">Found in</h3>${evidence}`;
+    foot = `<button class="btn ghost" data-act="close">Close</button>`;
+  } else if (done) {
+    body = `<div class="done-state"><div class="tick">${icon.check}</div><h2>${esc(a.done)}</h2>
+      <p class="muted" style="margin-top:6px">${a.oneOff ? `About ${inr(a.oneOff)} coming back to you.` : `${inr(a.save)} a month added to your savings.`}</p></div>
+      <h3 style="margin:18px 0 6px">What happens next</h3><ol class="steps">${a.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`;
+    foot = `<button class="btn" data-act="close">Done</button>`;
+  } else {
+    body = `<div class="sheet-top"><span class="mark">${b.mark}</span><div><h2>${esc(b.provider)}</h2><div class="muted small">${esc(b.title)}</div></div></div>
+      <div class="muted small">${a.oneOff ? 'You get back' : 'You save'}</div>
+      <div class="sheet-save num">${a.oneOff ? inr(a.oneOff) + '<span>one time</span>' : inr(a.save) + '<span>a month</span>'}</div>
+      <h3 style="margin-top:16px">${esc(a.headline)}</h3>
+      <div class="compare"><div><span class="k">Now</span><span class="now">${esc(a.now)}</span></div><div><span class="k">Better</span><span class="better">${esc(a.better)}</span></div></div>
+      <h3>Why</h3><ul class="why">${a.why.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>
+      <h3 style="margin-bottom:8px">Found in</h3>${evidence}
+      <h3 style="margin:18px 0 4px">What happens</h3><ol class="steps">${a.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
+      <p class="fine">${esc(a.partner)} Confidence: ${a.confidence.toLowerCase()}.</p>`;
+    foot = `<button class="btn" data-act="fix" data-id="${b.id}">${esc(a.verb)}${a.save ? ` and save ${inr(a.save)}/mo` : ''}</button>
+      <button class="btn ghost" data-act="close">Not now</button>`;
+  }
+  return `<div class="scrim" id="scrim" data-act="close"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="${esc(b.provider)}">
+    <div class="sheet-grab"></div><div class="sheet-body">${body}</div><div class="sheet-foot">${foot}</div>
+  </div>`;
+}
+
+function tabbar() {
+  const t = [['home', 'Home', icon.home], ['bills', 'Bills', icon.bills], ['credit', 'Credit', icon.credit], ['cal', 'Calendar', icon.cal]];
+  return `<nav class="tabbar">${t
+    .map(([k, l, i]) => `<button class="tab ${state.tab === k ? 'active' : ''}" data-act="tab" data-tab="${k}" aria-current="${state.tab === k}">${i}${l}</button>`)
+    .join('')}</nav>`;
+}
+
+// ---------- render ----------
+const root = document.getElementById('device');
+let lastTab = null;
+
+function render() {
+  const scroller = root.querySelector('.screen');
+  const keep = scroller && lastTab === state.tab ? scroller.scrollTop : 0;
+  let html;
+  if (state.stage === 'welcome') html = viewWelcome();
+  else if (state.stage === 'connect') html = viewConnect();
+  else if (state.stage === 'scan') html = viewScan();
+  else {
+    const v = { home: viewHome, bills: viewBills, credit: viewCredit, cal: viewCal, saved: viewSaved }[state.tab]();
+    html = `<main class="screen">${v}</main>${tabbar()}${state.sheet ? sheetHtml() : ''}<div class="toast" id="toast"></div>`;
+  }
+  root.innerHTML = html;
+  const s2 = root.querySelector('.screen');
+  if (s2) s2.scrollTop = keep;
+  lastTab = state.tab;
+  if (state.stage === 'app' && state.tab === 'home') bindSlider();
+}
+
+function openSheet(id) {
+  state.sheet = { id, step: 'detail' };
+  render();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    root.querySelector('#scrim')?.classList.add('open');
+    root.querySelector('#sheet')?.classList.add('open');
+    root.querySelector('#sheet .btn')?.focus({ preventScroll: true });
+  }));
+}
+
+function closeSheet() {
+  root.querySelector('#scrim')?.classList.remove('open');
+  root.querySelector('#sheet')?.classList.remove('open');
+  setTimeout(() => { state.sheet = null; render(); }, reduceMotion ? 0 : 260);
+}
+
+function refreshSheet() {
+  // Replace sheet content in place so it stays open.
+  const tmp = document.createElement('div');
+  tmp.innerHTML = sheetHtml();
+  const next = tmp.querySelector('#sheet');
+  const cur = root.querySelector('#sheet');
+  cur.innerHTML = next.innerHTML;
+}
+
+function toast(text, sub) {
+  const t = root.querySelector('#toast');
+  if (!t) return;
+  t.innerHTML = `${esc(text)}${sub ? `<span>${esc(sub)}</span>` : ''}`;
+  t.classList.add('show');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function tween(el, from, to, ms, prefix = '') {
+  if (!el) return;
+  if (reduceMotion) { el.textContent = prefix + num(to); return; }
+  const t0 = performance.now();
+  const step = (now) => {
+    const p = Math.min(1, (now - t0) / ms);
+    const e = 1 - (1 - p) ** 3;
+    el.textContent = prefix + num(from + (to - from) * e);
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// ---------- fixing ----------
+function fixOne(id) {
+  const b = byId(id);
+  state.fixed[id] = true;
+  state.sheet.step = 'done';
+  refreshSheet();
+  // Update the screen behind the sheet without closing it.
+  const scroller = root.querySelector('.screen');
+  const keep = scroller ? scroller.scrollTop : 0;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = { home: viewHome, bills: viewBills, credit: viewCredit, cal: viewCal, saved: viewSaved }[state.tab]();
+  scroller.innerHTML = tmp.innerHTML;
+  scroller.scrollTop = keep;
+  if (state.tab === 'home') bindSlider();
+  const chip = root.querySelector('#saved-chip');
+  if (chip) chip.textContent = inr(savedMonthly());
+  void b;
+}
+
+function fixAll() {
+  const items = openFixes();
+  const before = saveable();
+  const savedBefore = savedMonthly();
+  items.forEach((b) => (state.fixed[b.id] = true));
+  tween(root.querySelector('#hero-num'), before, 0, 1100);
+  tween(root.querySelector('#saved-chip'), savedBefore, savedMonthly(), 1100, '₹');
+  setTimeout(() => { render(); toast(`${items.length} fixes started`, `+${inr(savedMonthly() - savedBefore)}/mo`); }, reduceMotion ? 0 : 1300);
+}
+
+function bindSlider() {
+  const el = root.querySelector('#slider');
+  if (!el) return;
+  const knob = el.querySelector('#slider-knob');
+  const fill = el.querySelector('#slider-fill');
+  const label = el.querySelector('#slider-label');
+  let startX = 0, x = 0, dragging = false;
+  const max = () => el.clientWidth - 64;
+  const set = (v) => {
+    x = Math.max(0, Math.min(max(), v));
+    knob.style.transform = `translateX(${x}px)`;
+    fill.style.width = `${x + 64}px`;
+    label.style.opacity = String(1 - x / max());
+    el.setAttribute('aria-valuenow', String(Math.round((x / max()) * 100)));
+  };
+  const finish = () => {
+    el.classList.add('done');
+    knob.style.transition = fill.style.transition = 'all .2s';
+    set(max());
+    knob.innerHTML = icon.check;
+    label.style.opacity = '1';
+    label.textContent = 'Fixing everything';
+    fixAll();
+  };
+  knob.addEventListener('pointerdown', (e) => { dragging = true; startX = e.clientX - x; knob.setPointerCapture(e.pointerId); knob.style.transition = fill.style.transition = 'none'; });
+  knob.addEventListener('pointermove', (e) => { if (dragging) set(e.clientX - startX); });
+  const up = () => {
+    if (!dragging) return;
+    dragging = false;
+    if (x > max() * 0.86) finish();
+    else { knob.style.transition = fill.style.transition = 'all .25s'; set(0); }
+  };
+  knob.addEventListener('pointerup', up);
+  knob.addEventListener('pointercancel', up);
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); finish(); } });
+}
+
+// ---------- scan ----------
+function runScan() {
+  const rails = Object.keys(state.sources).filter((k) => state.sources[k]);
+  const feed = scanFeed.filter((f) => rails.includes(f.rail));
+  const feedEl = root.querySelector('#feed');
+  const counts = Object.fromEntries(rails.map((r) => [r, 0]));
+  const total = reduceMotion ? 1 : 4200;
+  const t0 = performance.now();
+  rails.forEach((r) => tween(root.querySelector(`#c-${r}`), 0, scanTotals[r].read, total));
+  feed.forEach((f, i) => {
+    setTimeout(() => {
+      counts[f.rail]++;
+      const fe = root.querySelector(`#f-${f.rail}`);
+      if (fe) fe.textContent = `${counts[f.rail]} found`;
+      const item = document.createElement('div');
+      item.className = 'feed-item';
+      item.innerHTML = `<b>${f.rail}</b><span>${esc(f.text)}</span>`;
+      feedEl.prepend(item);
+      while (feedEl.children.length > 6) feedEl.lastChild.remove();
+    }, reduceMotion ? 0 : (i / feed.length) * total);
+  });
+  setTimeout(() => {
+    const n = visible().length;
+    const hits = Object.values(counts).reduce((s, c) => s + c, 0);
+    root.querySelector('#scan-title').textContent = `Found ${n} bills`;
+    root.querySelector('#scan-result').innerHTML = `
+      <div class="scan-result">
+        ${hits > n ? `<p class="small muted" style="margin-bottom:18px">${hits} matches across your sources, merged into ${n} bills so nothing is counted twice.</p>` : ''}
+        <div class="hero-label">You can save every month</div>
+        <div class="hero-amount num"><span class="rupee">₹</span><span id="scan-amt">0</span></div>
+        <button class="btn" style="margin-top:18px" data-act="go-app">Show me how</button>
+      </div>`;
+    root.querySelector('#feed').style.display = 'none';
+    tween(root.querySelector('#scan-amt'), 0, saveable(), 900);
+    root.querySelector('[data-act="go-app"]').focus({ preventScroll: true });
+  }, reduceMotion ? 50 : total + 400);
+  void t0;
+}
+
+// ---------- events ----------
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-act]');
+  if (!t || !root.contains(t)) return;
+  const act = t.dataset.act;
+  if (act === 'go-welcome') { state.stage = 'welcome'; render(); }
+  else if (act === 'go-connect') { state.stage = 'connect'; render(); }
+  else if (act === 'toggle-src') { state.sources[t.dataset.src] = !state.sources[t.dataset.src]; render(); }
+  else if (act === 'go-scan') { state.stage = 'scan'; render(); runScan(); }
+  else if (act === 'go-app') { state.stage = 'app'; state.tab = 'home'; render(); }
+  else if (act === 'tab') { state.tab = t.dataset.tab; state.sheet = null; render(); root.querySelector('.screen').scrollTop = 0; }
+  else if (act === 'filter') { state.filter = t.dataset.f; render(); }
+  else if (act === 'open') openSheet(t.dataset.id);
+  else if (act === 'close') closeSheet();
+  else if (act === 'fix') fixOne(t.dataset.id);
+  else if (act === 'cal') { state.calSel = t.dataset.d; render(); }
+  else if (act === 'connect-cibil') { state.sources.CIBIL = true; render(); }
+});
+
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.sheet) closeSheet(); });
+
+render();
+
+</script>
+</body>
+</html>
